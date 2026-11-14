@@ -1,0 +1,41 @@
+name: Publish ToDo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Check out the app package
+        uses: actions/checkout@v6
+      - name: Unpack the app
+        run: |
+          mkdir -p site
+          unzip -q ToDo-PWA.zip -d site
+          touch site/.nojekyll
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload app files
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - name: Publish ToDo
+        id: deployment
+        uses: actions/deploy-pages@v4
